@@ -1,5 +1,6 @@
 import React, { Component } from 'react'
-
+import NavHeader from '../../components/NavHeader'
+import Styles from './index.module.scss'
 export default class Citylist extends Component {
     constructor(){
         super()
@@ -31,8 +32,8 @@ export default class Citylist extends Component {
     }
     render() {
         return (
-            <div>
-                
+            <div className={Styles.citylist}>
+               <NavHeader>城市列表</NavHeader>
             </div>
         )
     }
