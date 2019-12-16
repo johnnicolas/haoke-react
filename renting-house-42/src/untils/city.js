@@ -5,7 +5,7 @@ import axios from 'axios'
 const Key = 'hkzf-key'
 
 //保存城市到本地
-const setcity = city => {
+export const setcity = city => {
     window.localStorage.setItem(Key, JSON.stringify(city))
 }
 //从本地取出保存的本地数据

@@ -12,6 +12,8 @@ import image3 from "../../assets/images/nav-3.png";
 import image4 from "../../assets/images/nav-4.png";
 //导入搜索栏
 import SearchHeader from '../../components/SearchHeader'
+//导入获取城市的方法
+import {getlocationCity} from '../../untils/city'
 export default class Home extends Component {
   constructor() {
     super();
@@ -20,7 +22,8 @@ export default class Home extends Component {
       imgHeight: 212, //轮播图的固定高度
       swipers: null,
       grounps: null,
-      news: null
+      news: null,
+      cityName:''
     };
   }
   //定义实例属性
@@ -31,13 +34,19 @@ export default class Home extends Component {
     { icon: image4, text: "去出租", path: "/rent/add" }
   ];
   //在挂载之前渲染数据
-  componentDidMount() {
+  async componentDidMount() {
+    //获取定位城市数据
+    const {label} = await getlocationCity()
+    this.setState({
+      cityName:label
+    })
     //获取轮播图的数据
     this.getSwipersData();
     //获取租房小组的数据
     this.getGrounpsData();
     //获取最新资讯的数据
     this.getNewsData();
+
   }
   //获取轮播图的方法
   getSwipersData = async () => {
@@ -182,11 +191,11 @@ export default class Home extends Component {
     );
   };
   render() {
-    const { swipers, grounps, news } = this.state;
+    const { cityName,swipers, grounps, news } = this.state;
     return (
       <div className={Styles.root}>
         {/* 渲染搜索栏 */}
-        <SearchHeader cityName='深圳'></SearchHeader>
+        <SearchHeader cityName={cityName}></SearchHeader>
         {/* 渲染轮播图 */}
         {swipers && this.renderSwipers()}
         {/* 渲染导航菜单 */}
