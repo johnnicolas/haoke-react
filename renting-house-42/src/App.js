@@ -11,7 +11,7 @@ import { HashRouter as Router, Route, Switch, Redirect } from 'react-router-dom'
 function App() {
   return (
     <Router>
-      <div className="App">
+      <div id="app">
         <Switch>
           <Route path='/login' component={Login} />
           <Route path='/layout' component={Layout} />
