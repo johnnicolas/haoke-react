@@ -4,6 +4,7 @@ import NavHeader from "../../components/NavHeader";
 import { getlocationCity } from "../../untils/city";
 //引入loading
 import {Toast} from 'antd-mobile'
+
 const BMap = window.BMap;
 //圆形覆盖物的样式
 const labelStyle = {
@@ -32,7 +33,7 @@ export default class Map extends Component {
     } else if (currenZoom > 12 && currenZoom<14){
       type = 'circle'
       nextZoom = 15
-    }else if(currenZoom > 15){
+    }else if(currenZoom > 14){
      type = 'rect'
     }
     //将这两个参数返回
@@ -60,6 +61,7 @@ export default class Map extends Component {
         if (point) {
           this.map.centerAndZoom(point, 11); //这是地图展示的大小
           // map.addOverlay(new BMap.Marker(point));这个是地图展示的坐标
+          //渲染覆盖物
           this.renderOverlays(value);
         }
       },
@@ -81,6 +83,8 @@ export default class Map extends Component {
       if (type === 'circle') {
         //将二级覆盖物的方法传入item和nextzoom
         this.renderCircleOverlays(item,nextZoom)
+      }else {
+        this.renderRectOverlays(item)
       }
     });
   };
@@ -122,7 +126,49 @@ export default class Map extends Component {
       this.map.addOverlay(label);
   }
   //添加第三级覆盖物
-  renderRectOverlays=()=>{
+  renderRectOverlays=(item)=>{
+    //解构出来
+     const {
+      coord: { longitude, latitude },
+      count,
+      label:name,
+      value
+     } = item
+     var point = new BMap.Point(longitude,latitude);
+      var opts = {
+        position: point, // 指定文本标注所在的地理位置
+        offset: new BMap.Size(30, -30) //设置文本偏移量
+      };
+      var label = new BMap.Label("", opts); // 创建文本标注对象
+      label.setStyle(labelStyle);
+      label.setContent(`<div class=${styles.rect}>
+      <span class=${styles.housename}>${name}</span>
+      <span class=${styles.housenum}>${count}</span>
+      <i class=${styles.arrow}></i>
+      </div>`);
+      //这里不需要在添加地图
+      //给覆盖物添加点击事件
+      label.addEventListener('click',e=>{
+        //当我点击的时候会跳到屏幕的中心点
+        if(e && e.changedTouches){
+          //手机点击的位置
+          const {clientX,clientY} = e.changedTouches[0]
+         //计算应该移动的像素
+         const moveX = window.innerWidth / 2 - clientX
+         const moveY = (window.innerHeight -330 + 45) /2 - clientY
+         //点击小区显示在可视区域中心
+         this.map.panBy(moveX,moveY)
+         //发送请求，获取小区下面的房源列表 // 房源列表的id就是value
+        this.getHouseListId(value)
+        }
+      })
+      //渲染地图
+      this.map.addOverlay(label);
+  }
+  //获取小区房源的方法
+  getHouseListId= async id=>{
+    const result = await this.$axios.get(`/houses?cityId=${id}`)
+    console.log('这是三级覆盖物的id',result)
 
   }
   render() {
