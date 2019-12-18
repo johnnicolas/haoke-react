@@ -3,7 +3,12 @@ import styles from "./index.module.scss";
 import NavHeader from "../../components/NavHeader";
 import { getlocationCity } from "../../untils/city";
 //引入loading
-import {Toast} from 'antd-mobile'
+import { Toast } from "antd-mobile";
+//导入classnames
+import classNames from "classnames";
+//引入房源组件
+import HouseItem from '../../components/HouseItem'
+
 
 const BMap = window.BMap;
 //圆形覆盖物的样式
@@ -17,33 +22,36 @@ const labelStyle = {
   textAlign: "center"
 };
 export default class Map extends Component {
+  //如果不写构造器的话 也可以直接写state
+  state = {
+    houseList: [],
+    isShow: false
+  };
   componentDidMount() {
     this.getmap();
   }
   //这个是判断是1级还是2级的方法
-  getTypeAndZoom= ()=>{
-    let type = 'circle' //圆形覆盖物适用 一二级
-    let nextZoom = 11   //缩放等级
+  getTypeAndZoom = () => {
+    let type = "circle"; //圆形覆盖物适用 一二级
+    let nextZoom = 11; //缩放等级
     //获取当前的缩放级别，参考类型里面的zoom
-    const currenZoom = this.map.getZoom()
+    const currenZoom = this.map.getZoom();
     //然后进行判断
-    if (currenZoom > 10 && currenZoom<12) {
-      type = 'circle'
-      nextZoom = 13
-    } else if (currenZoom > 12 && currenZoom<14){
-      type = 'circle'
-      nextZoom = 15
-    }else if(currenZoom > 14){
-     type = 'rect'
+    if (currenZoom > 10 && currenZoom < 12) {
+      type = "circle";
+      nextZoom = 13;
+    } else if (currenZoom > 12 && currenZoom < 14) {
+      type = "circle";
+      nextZoom = 15;
+    } else if (currenZoom > 14) {
+      type = "rect";
     }
     //将这两个参数返回
-  return {
-    type,
-    nextZoom
-  }
-    
-    
-  }
+    return {
+      type,
+      nextZoom
+    };
+  };
   //创建一个方法获取map
   getmap = async () => {
     //声明一个常量记录获取到的定位城市 label是结构语法直接获取里面的label值
@@ -71,111 +79,143 @@ export default class Map extends Component {
     //然后将这个方法放到生命周期钩子函数里面然后就可以执行
   };
   //渲染覆盖物 然后将这个覆盖物渲染到上面
-  renderOverlays = async (id) => {
-    Toast.loading('正在拼命加载中',1)
+  renderOverlays = async id => {
+    Toast.loading("正在拼命加载中", 1);
     const res = await this.$axios.get(`/area/map?id=${id}`);
     console.log("这是获取城市的id", res);
     //等到渲染完毕之后移除toast
-    Toast.hide()
+    Toast.hide();
     //申明一个常量利用解构的语法取出里面的上面获取缩放级别的方法
-    const {type,nextZoom} = this.getTypeAndZoom()
+    const { type, nextZoom } = this.getTypeAndZoom();
     res.data.body.forEach(item => {
-      if (type === 'circle') {
+      if (type === "circle") {
         //将二级覆盖物的方法传入item和nextzoom
-        this.renderCircleOverlays(item,nextZoom)
-      }else {
-        this.renderRectOverlays(item)
+        this.renderCircleOverlays(item, nextZoom);
+      } else {
+        this.renderRectOverlays(item);
       }
     });
   };
   //添加第一级和第二级覆盖物
-  renderCircleOverlays=(item,nextZoom)=>{
- //根据item生成一个一个的覆盖物，并且创建好之后，添加到地图上,利用解构语法
-      //前面一个一定要放经度
-      const {
-        coord: { longitude, latitude },
-        count,
-        label:name,
-        value
-      } = item;
-      var point = new BMap.Point(longitude,latitude);
-      var opts = {
-        position: point, // 指定文本标注所在的地理位置
-        offset: new BMap.Size(30, -30) //设置文本偏移量
-      };
-      var label = new BMap.Label("", opts); // 创建文本标注对象
-      label.setStyle(labelStyle);
-      label.setContent(`<div class=${styles.bubble}>
+  renderCircleOverlays = (item, nextZoom) => {
+    //根据item生成一个一个的覆盖物，并且创建好之后，添加到地图上,利用解构语法
+    //前面一个一定要放经度
+    const {
+      coord: { longitude, latitude },
+      count,
+      label: name,
+      value
+    } = item;
+    var point = new BMap.Point(longitude, latitude);
+    var opts = {
+      position: point, // 指定文本标注所在的地理位置
+      offset: new BMap.Size(30, -30) //设置文本偏移量
+    };
+    var label = new BMap.Label("", opts); // 创建文本标注对象
+    label.setStyle(labelStyle);
+    label.setContent(`<div class=${styles.bubble}>
       <p class=${styles.name}>${name}</p>
       <p class=${styles.name}>${count}</p>
       </div>`);
-      this.map.addOverlay(label);
-      //给每个覆盖物设置点击事件
-      label.addEventListener('click',()=>{
-        //清除之前的覆盖物，但是这里要使用的是异步方法，因为等同步都请求完之后，在执行异步的代码
-        setTimeout(() => {
-          //清除覆盖物的方法
-          this.map.clearOverlays()
-        }, 0);
-        //在渲染新的视图,并且将缩放级别传入就是nextzoom
-        this.map.centerAndZoom(point, nextZoom)
-        //渲染地图
-       //调用获取小区地址的方法将小区的value传
-       this.renderOverlays(value)
-      })
-      this.map.addOverlay(label);
-  }
+    this.map.addOverlay(label);
+    //给每个覆盖物设置点击事件
+    label.addEventListener("click", () => {
+      //清除之前的覆盖物，但是这里要使用的是异步方法，因为等同步都请求完之后，在执行异步的代码
+      setTimeout(() => {
+        //清除覆盖物的方法
+        this.map.clearOverlays();
+      }, 0);
+      //在渲染新的视图,并且将缩放级别传入就是nextzoom
+      this.map.centerAndZoom(point, nextZoom);
+      //渲染地图
+      //调用获取小区地址的方法将小区的value传
+      this.renderOverlays(value);
+    });
+    this.map.addOverlay(label);
+  };
   //添加第三级覆盖物
-  renderRectOverlays=(item)=>{
+  renderRectOverlays = item => {
     //解构出来
-     const {
+    const {
       coord: { longitude, latitude },
       count,
-      label:name,
+      label: name,
       value
-     } = item
-     var point = new BMap.Point(longitude,latitude);
-      var opts = {
-        position: point, // 指定文本标注所在的地理位置
-        offset: new BMap.Size(30, -30) //设置文本偏移量
-      };
-      var label = new BMap.Label("", opts); // 创建文本标注对象
-      label.setStyle(labelStyle);
-      label.setContent(`<div class=${styles.rect}>
+    } = item;
+    var point = new BMap.Point(longitude, latitude);
+    var opts = {
+      position: point, // 指定文本标注所在的地理位置
+      offset: new BMap.Size(30, -30) //设置文本偏移量
+    };
+    var label = new BMap.Label("", opts); // 创建文本标注对象
+    label.setStyle(labelStyle);
+    label.setContent(`<div class=${styles.rect}>
       <span class=${styles.housename}>${name}</span>
       <span class=${styles.housenum}>${count}</span>
       <i class=${styles.arrow}></i>
       </div>`);
-      //这里不需要在添加地图
-      //给覆盖物添加点击事件
-      label.addEventListener('click',e=>{
-        //当我点击的时候会跳到屏幕的中心点
-        if(e && e.changedTouches){
-          //手机点击的位置
-          const {clientX,clientY} = e.changedTouches[0]
-         //计算应该移动的像素
-         const moveX = window.innerWidth / 2 - clientX
-         const moveY = (window.innerHeight -330 + 45) /2 - clientY
-         //点击小区显示在可视区域中心
-         this.map.panBy(moveX,moveY)
-         //发送请求，获取小区下面的房源列表 // 房源列表的id就是value
-        this.getHouseListId(value)
-        }
-      })
-      //渲染地图
-      this.map.addOverlay(label);
-  }
-  //获取小区房源的方法
-  getHouseListId= async id=>{
-    const result = await this.$axios.get(`/houses?cityId=${id}`)
-    console.log('这是三级覆盖物的id',result)
+    //这里不需要在添加地图
+    //给覆盖物添加点击事件
+    label.addEventListener("click", e => {
+      //当我点击的时候会跳到屏幕的中心点
+      if (e && e.changedTouches) {
+        //手机点击的位置
+        const { clientX, clientY } = e.changedTouches[0];
+        //计算应该移动的像素
+        const moveX = window.innerWidth / 2 - clientX;
+        const moveY = (window.innerHeight - 330 + 45) / 2 - clientY;
+        //点击小区显示在可视区域中心
+        this.map.panBy(moveX, moveY);
+        //发送请求，获取小区下面的房源列表 // 房源列表的id就是value
+        this.getHouseListId(value);
 
-  }
+      }
+    });
+    //渲染地图
+    this.map.addOverlay(label);
+  };
+  //获取小区房源的方法
+  getHouseListId = async id => {
+    Toast.loading("数据正在拼命加载中", 0);
+    const result = await this.$axios.get(`/houses?cityId=${id}`);
+    Toast.hide();
+    console.log("这是三级覆盖物的id", result);
+    this.setState({
+      houseList: result.data.body.list,
+      //这是列表是否展开的类名
+      isShow: true
+    });
+  };
+  //将小区房源渲染
+  renderHouseList = () => {
+    const { houseList, isShow } = this.state;
+    return (
+      <div className={classNames(styles.houseList, { [styles.show]: isShow })}>
+        <div className={styles.titleWrap}>
+          <h1 className={styles.listTitle}>房屋列表</h1>
+          <a href="#/house/list" className={styles.titleMore}>
+            更多房源
+          </a>
+        </div>
+        <div className={styles.houseItems}>
+          {/* 遍历并且生成 */}
+          {
+            houseList.map(item=>{
+            return  <HouseItem key={item.houseCode} {...item}></HouseItem> 
+            })
+          }
+        </div>
+      </div>
+    );
+  };
+
   render() {
+    const {houseList} = this.state
     return (
       <div className={styles.map}>
         <NavHeader>地图找房</NavHeader>
         <div id="container"></div>
+        {houseList && this.renderHouseList()} 
       </div>
     );
   }

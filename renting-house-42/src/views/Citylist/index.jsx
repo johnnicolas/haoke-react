@@ -9,6 +9,7 @@ import { AutoSizer, List } from "react-virtualized";
 import { Toast } from "antd-mobile";
 import "react-virtualized/styles.css";
 //申明变量记录 每一行标题的高度和每一行中城市的高度
+//引入函数式组件
 const TITLE_HEIGHT = 36;
 const ROW_HEIGHT = 50;
 //声明一个常量记录 北上广深

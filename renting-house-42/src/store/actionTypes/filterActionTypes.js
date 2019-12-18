@@ -1,0 +1,1 @@
+export const SET_OPEN_TYPE = 'SET_OPEN_TYPE'
