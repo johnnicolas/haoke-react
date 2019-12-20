@@ -1,4 +1,4 @@
-import {createStore,applyMiddleware,componse} from 'redux'
+import {createStore,applyMiddleware,compose} from 'redux'
 
 //导入reducer 
 import rootReducer from './reducer'
@@ -7,7 +7,7 @@ import rootReducer from './reducer'
 import thunk from 'redux-thunk'
 
 //创建仓库并且导出
-const composeEnhancers = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || componse
+const composeEnhancers = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose
 const store =createStore(rootReducer,composeEnhancers(applyMiddleware(thunk)))
 
 export default store 
