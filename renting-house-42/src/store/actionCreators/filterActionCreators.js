@@ -1,4 +1,4 @@
-import {SET_OPEN_TYPE,SET_FILTER_DATA} from '../actionTypes/filterActionTypes'
+import {SET_OPEN_TYPE,SET_FILTER_DATA,SET_SELECT_VALUE,SELECT_TITLE_VALUE} from '../actionTypes/filterActionTypes'
 //引入获取定位的城市的方法
 import {getlocationCity} from '../../untils/city'
 //导入axios
@@ -25,4 +25,18 @@ export const asyncSetFilterData = dispatch =>{
        //在触发同步的action将这个值传给他 然后他会到reducer里面进行处理
       dispatch(setFilterData(result.data.body))
    }
+}
+//触发同步获取选中值的方法
+export const setSelectValue = obj =>{
+    return {
+        type:SET_SELECT_VALUE,
+        payload:obj
+    }
+}
+//获取选中的高亮的方法
+export const selectTitleValue = titleobj =>{
+    return {
+        type:SELECT_TITLE_VALUE,
+        payload:titleobj
+    }
 }

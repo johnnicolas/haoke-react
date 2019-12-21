@@ -156,6 +156,7 @@ export default class Citylist extends Component {
   };
   render() {
     const { cityListObj, cityIndex } = this.state;
+   
     return (
       <div className={Styles.citylist}>
         <NavHeader>城市列表</NavHeader>
